@@ -5,156 +5,584 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{ app_name }}</title>
 
+  <!-- content pack -->
   <script src="/static/content.js"></script>
 
   <style>
     :root{
-      --bg:#0b0f14; --panel:#0f172a; --border:#1f2937;
-      --text:#e7eef7; --muted:rgba(231,238,247,.72);
+      --bg:#0b0f14; --panel:#0f172a; --panel2:#0b1220; --border:#1f2937;
+      --text:#e7eef7; --muted:rgba(231,238,247,.72); --accent:#0ea5e9;
     }
+    *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text);
-          font-family: ui-sans-serif, system-ui; }
-    .container{ max-width:1000px; margin:auto; padding:20px; padding-bottom:90px;}
-    .card{ background:var(--panel); border:1px solid var(--border);
-           border-radius:16px; padding:16px; margin-bottom:14px;}
-    .kpi{ font-size:52px; font-weight:900; }
-    .pill{ display:inline-block; padding:6px 10px; border-radius:999px;
-           background:#0b1220; border:1px solid var(--border); margin:4px;}
-    .btn{ border:1px solid #0ea5e9; background:#0ea5e922; padding:8px 12px;
-          border-radius:12px; cursor:pointer; color:var(--text);}
-    .footer{
-      position:fixed; bottom:0; left:0; right:0;
-      background:#0b0f14; border-top:1px solid var(--border);
-      padding:10px; display:flex; justify-content:space-between;
-      font-size:13px; color:var(--muted);
+          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    a{ color:inherit; text-decoration:none; }
+
+    /* Sticky top menu */
+    .top{ position:sticky; top:0; z-index:50; backdrop-filter: blur(8px);
+          background: rgba(11,15,20,.78); border-bottom:1px solid var(--border); }
+    .top-inner{ max-width:1040px; margin:0 auto; padding:12px 18px;
+                display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .brand{ display:flex; align-items:center; gap:10px; min-width: 240px; }
+    .mark{ width:34px; height:34px; border-radius:12px; border:1px solid var(--border);
+           background:var(--panel2); display:grid; place-items:center; font-size:16px; }
+    .brand-title{ display:flex; flex-direction:column; line-height:1.1; }
+    .brand-title strong{ font-size:14px; letter-spacing:-0.02em; }
+    .brand-title span{ font-size:12px; color:var(--muted); }
+
+    nav.menu{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    nav.menu a{ padding:8px 10px; border-radius:12px; border:1px solid var(--border);
+                background: rgba(15,23,42,.65); font-size:13px; }
+    nav.menu a:hover{ border-color: rgba(14,165,233,.5); }
+    nav.menu a.primary{ background: rgba(14,165,233,.14); border-color: rgba(14,165,233,.55); }
+
+    /* Layout */
+    .container{ max-width:1040px; margin:0 auto; padding:18px; padding-bottom: 92px; }
+    .grid{ display:grid; gap:14px; grid-template-columns: repeat(12, 1fr); margin-top:14px; }
+    .card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:16px; }
+    .hero{ grid-column: span 12; }
+    .half{ grid-column: span 6; }
+    .third{ grid-column: span 4; }
+    @media (max-width: 980px){ .third{ grid-column: span 12; } }
+    @media (max-width: 900px){ .half{ grid-column: span 12; } }
+
+    .label{ font-size:12px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
+    .kpi{ font-size:54px; font-weight:900; letter-spacing:-0.05em; margin:6px 0 2px; }
+    .statusline{ font-size:13px; color:var(--muted); line-height:1.5; }
+    .roast{ margin:10px 0 0; color:var(--muted); line-height:1.45; min-height: 44px; }
+
+    .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .pill{ display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px;
+           background:var(--panel2); border:1px solid var(--border); font-size:13px; color:rgba(231,238,247,.9); }
+
+    .btn{ border:1px solid rgba(14,165,233,.55); background: rgba(14,165,233,.12);
+          color: var(--text); border-radius:14px; padding:10px 12px; font-weight:800; cursor:pointer; }
+    .btn:active{ transform: translateY(1px); }
+
+    select{
+      width:100%; background:var(--panel2); border:1px solid var(--border);
+      border-radius:14px; padding:10px 12px; color:var(--text); font-size:14px; outline:none;
     }
+
+    .big{ font-size:26px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 4px; }
+    .hint{ color:var(--muted); font-size:13px; line-height:1.45; }
+    .mono{ font-variant-numeric: tabular-nums; }
+
+    /* Meter */
+    .meter{ margin-top:10px; }
+    .meterbar{
+      width:100%; height: 10px; border-radius:999px; overflow:hidden;
+      border:1px solid var(--border); background: rgba(11,18,32,.45);
+    }
+    .meterbar > div{
+      height:100%;
+      background: rgba(14,165,233,.60);
+      width: 0%;
+      transition: width .35s ease;
+    }
+
+    /* Persona block */
     .persona{
       display:flex; align-items:center; gap:10px;
-      padding:10px; border-radius:12px;
-      background:#0b1220; border:1px solid var(--border);
-      margin-top:10px;
+      padding:10px 12px;
+      border-radius:16px;
+      background: rgba(11,18,32,.40);
+      border:1px solid var(--border);
+      margin-top:12px;
     }
-    .persona-icon{
-      font-size:22px;
+    .persona .icon{
+      width:36px; height:36px; display:grid; place-items:center;
+      border-radius:14px; background: rgba(15,23,42,.65); border:1px solid var(--border);
+      font-size:18px;
     }
+    .persona .name{ font-weight:900; letter-spacing:-0.02em; }
+    .persona .desc{ color:var(--muted); font-size:13px; margin-top:2px; }
+
+    /* Fixed footer */
+    .footerbar{
+      position: fixed; left:0; right:0; bottom:0;
+      background: rgba(11,15,20,.88);
+      border-top:1px solid var(--border);
+      backdrop-filter: blur(8px);
+      z-index:60;
+    }
+    .footer-inner{
+      max-width:1040px; margin:0 auto; padding:10px 18px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      color:var(--muted); font-size:13px;
+    }
+    .footer-inner a{ text-decoration: underline; }
+    .refreshbox{ display:flex; align-items:center; gap:10px; min-width: 320px; justify-content:center; flex:1; }
+    .bar{
+      width: 190px; height: 6px; border-radius:999px; overflow:hidden;
+      border:1px solid var(--border); background: rgba(15,23,42,.65);
+    }
+    .bar > div{
+      height:100%; width:100%;
+      background: rgba(14,165,233,.55);
+      transform-origin: left center;
+      transform: scaleX(1);
+    }
+
+    ul.clean{ margin:10px 0 0; padding-left:18px; color:var(--muted); }
+    ul.clean li{ margin:6px 0; }
   </style>
 </head>
+
 <body>
-
-<div class="container">
-
-  <div class="card">
-    <div>Overkill Score</div>
-    <div class="kpi" id="score">--</div>
-    <div id="status"></div>
-    <div id="roast" style="margin-top:10px;color:var(--muted)"></div>
-
-    <div id="personaBox" class="persona">
-      <div class="persona-icon" id="personaIcon">🧠</div>
-      <div>
-        <strong id="personaName">Persona</strong>
-        <div style="font-size:13px;color:var(--muted)" id="personaDesc"></div>
+  <div class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="mark">⚙️</div>
+        <div class="brand-title">
+          <strong>{{ app_name }}</strong>
+          <span>self-hosted overkill detector</span>
+        </div>
       </div>
+      <nav class="menu" aria-label="menu">
+        <a class="primary" href="/">Dashboard</a>
+        <a href="/raw">Raw</a>
+        <a href="/status.json" target="_blank" rel="noreferrer">status.json</a>
+        <a href="/health" target="_blank" rel="noreferrer">health</a>
+        <a href="{{ github_url }}" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
     </div>
-
-    <div style="margin-top:12px;">
-      <button class="btn" id="vibeBtn">New vibe</button>
-      <button class="btn" id="excuseBtn">Generate excuse</button>
-      <button class="btn" id="toggleRefreshBtn">Auto-refresh: ON</button>
-    </div>
-
-    <div style="margin-top:10px" id="excuse"></div>
   </div>
 
-</div>
+  <div class="container">
+    <div class="grid">
+      <!-- HERO -->
+      <div class="card hero">
+        <div class="label">Overkill score</div>
+        <div class="kpi" id="score">--</div>
+        <div class="statusline">
+          Status: <span id="status">---</span>
+          <span id="bonus" style="opacity:.9;"></span>
+          <span id="flavor" style="opacity:.9;"></span>
+        </div>
+        <div class="roast" id="roast">loading...</div>
 
-<div class="footer">
-  <div>© <span id="year"></span> <a href="{{ github_url }}" target="_blank">GitHub</a></div>
-  <div>Version {{ app_version }}</div>
-</div>
+        <div class="persona" title="Persona is just a meme label (not author)">
+          <div class="icon" id="personaIcon">🧠</div>
+          <div>
+            <div class="name" id="personaName">Persona</div>
+            <div class="desc" id="personaDesc">—</div>
+          </div>
+          <div style="margin-left:auto" class="pill" id="personaTag">—</div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <span class="pill" id="osPill">OS: ...</span>
+          <span class="pill" id="dockerPill">Docker: ...</span>
+          <span class="pill" id="uptimePill">Uptime: ...</span>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <button class="btn" id="vibeBtn">New vibe</button>
+          <button class="btn" id="toggleRefreshBtn">Auto-refresh: ON</button>
+          <span class="pill mono" id="nextRefreshPill">next refresh in: --s</span>
+        </div>
+      </div>
+
+      <!-- SYSTEM + ACHIEVEMENTS -->
+      <div class="card half">
+        <div class="label">System</div>
+        <div class="row" id="sys" style="margin-top:10px"></div>
+
+        <div class="hint" style="margin-top:10px" id="archeHint"></div>
+
+        <div class="label" style="margin-top:14px">Achievements</div>
+        <div class="row" id="achievements" style="margin-top:10px"></div>
+      </div>
+
+      <!-- WHAT COULD IT DO -->
+      <div class="card half">
+        <div class="label">What could it do?</div>
+        <div style="margin-top:10px">
+          <select id="serviceSelect">
+            <option value="minecraft">Minecraft servers</option>
+            <option value="nginx">nginx instances</option>
+            <option value="pihole">Pi-hole instances</option>
+            <option value="immich">Immich instances</option>
+            <option value="vaultwarden">Vaultwarden instances</option>
+            <option value="homeassistant">Home Assistant instances</option>
+            <option value="grafana">Grafana instances</option>
+            <option value="prometheus">Prometheus instances</option>
+            <option value="jellyfin">Jellyfin instances</option>
+            <option value="paperless">Paperless-ngx instances</option>
+            <option value="nextcloud">Nextcloud instances</option>
+          </select>
+
+          <div class="big" id="serviceCount">--</div>
+          <div class="hint" id="serviceHint"></div>
+
+          <div class="row" id="capacityMeta" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- FUN TOOLS -->
+      <div class="card third">
+        <div class="label">Excuse generator</div>
+        <div class="hint" style="margin-top:10px">Only changes when you click. Persists across restarts.</div>
+
+        <div class="big" id="excuse">—</div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="excuseBtn">Generate excuse</button>
+        </div>
+      </div>
+
+      <div class="card third">
+        <div class="label">Rationalization meter</div>
+        <div class="hint" style="margin-top:10px" id="meterText">—</div>
+
+        <div class="meter">
+          <div class="meterbar"><div id="meterFill"></div></div>
+          <div class="hint mono" style="margin-top:8px" id="meterValue">—</div>
+        </div>
+      </div>
+
+      <div class="card third">
+        <div class="label">Service horoscope</div>
+        <div class="hint" style="margin-top:10px">Daily prophecy, tailored to your chaos.</div>
+
+        <div class="big" id="horoscope">—</div>
+        <div class="hint mono" style="margin-top:10px" id="horoscopeKey"></div>
+      </div>
+
+      <div class="card hero">
+        <div class="label">Homelab tax</div>
+        <div class="hint" style="margin-top:10px">A completely scientific measure of guilt and heat.</div>
+        <ul class="clean" id="taxList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed footer -->
+  <div class="footerbar">
+    <div class="footer-inner">
+      <div>© <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a></div>
+
+      <div class="refreshbox">
+        <span class="mono" id="nextRefreshText">next refresh in: --s</span>
+        <div class="bar" aria-hidden="true"><div id="progress"></div></div>
+      </div>
+
+      <div>Version <strong>{{ app_version }}</strong> · auto-refresh <strong>30s</strong></div>
+    </div>
+  </div>
 
 <script>
+/* ---------------------------
+   Storage keys (v2)
+   (prevents old broken values)
+---------------------------- */
+const LS_EXCUSE = "oe_excuse_v2";
+const LS_VIBE   = "oe_vibe_v2";
+const LS_AUTO   = "oe_autorefresh_v2";
+
 let LAST = null;
-const LS_EXCUSE = "oe_excuse_v1";
-const LS_VIBE = "oe_vibe_v1";
-const LS_AUTOREFRESH = "oe_autorefresh_v1";
+
+const REFRESH_EVERY = 30;
+let remaining = REFRESH_EVERY;
+let interval = null;
 
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)] }
-function saveLS(k,v){ localStorage.setItem(k,v); }
-function loadLS(k,d=null){ return localStorage.getItem(k)||d; }
 
-/* Persona selection logic */
+function loadLS(key, fallback=null){
+  try { const v = localStorage.getItem(key); return (v === null ? fallback : v); }
+  catch { return fallback; }
+}
+function saveLS(key, value){
+  try { localStorage.setItem(key, value); } catch {}
+}
+
+/* robust parse: accepts JSON or plain string */
+function parseVibe(v){
+  if (!v) return null;
+  try {
+    const obj = JSON.parse(v);
+    if (obj && typeof obj === "object" && (obj.roast || obj.flavor)) {
+      return { roast: obj.roast || "", flavor: obj.flavor || "" };
+    }
+  } catch {}
+  // plain string fallback
+  return { roast: String(v), flavor: "" };
+}
+
+function setVibe(roast, flavor){
+  document.getElementById('roast').textContent = roast || "";
+  document.getElementById('flavor').textContent = flavor || "";
+  saveLS(LS_VIBE, JSON.stringify({ roast, flavor }));
+}
+
+/* Persona selection: deterministic-ish based on stats */
 function choosePersona(){
-  if(!LAST) return PERSONAS[0];
+  const score   = LAST?.overkill_score ?? 0;
+  const running = LAST?.docker?.containers_running ?? 0;
+  const uptime  = LAST?.system?.uptime_days ?? 0;
+  const idleRam = LAST?.capacity?.idle_ram_gb_est ?? 0;
 
-  const score = LAST.overkill_score || 0;
-  const running = LAST.docker?.containers_running || 0;
-  const uptime = LAST.system?.uptime_days || 0;
-
-  if(uptime > 30) return PERSONAS.find(p=>p.id==="uptime_maximalist");
-  if(running > 20) return PERSONAS.find(p=>p.id==="compose_archaeologist");
-  if(score > 75) return PERSONAS.find(p=>p.id==="rack_philosopher");
-  if(running > 5) return PERSONAS.find(p=>p.id==="yaml_sorcerer");
-
-  return pick(PERSONAS);
+  if (uptime >= 30) return PERSONAS.find(p => p.id === "uptime_maximalist") || PERSONAS[0];
+  if (running >= 20) return PERSONAS.find(p => p.id === "compose_archaeologist") || PERSONAS[0];
+  if (idleRam >= 2.0 && running === 0) return PERSONAS.find(p => p.id === "idle_aesthetic") || PERSONAS[0];
+  if (score >= 80) return PERSONAS.find(p => p.id === "rack_philosopher") || PERSONAS[0];
+  if (running >= 6) return PERSONAS.find(p => p.id === "yaml_sorcerer") || PERSONAS[0];
+  return PERSONAS.find(p => p.id === "metric_mystic") || PERSONAS[0];
 }
 
 function renderPersona(){
   const p = choosePersona();
   document.getElementById("personaIcon").textContent = p.icon;
   document.getElementById("personaName").textContent = p.name;
-  document.getElementById("personaDesc").textContent = p.description;
+  document.getElementById("personaDesc").textContent = p.desc;
+  document.getElementById("personaTag").textContent = `${p.icon} ${p.name}`;
 }
 
 function generateExcuse(){
-  return pick(EXCUSES);
+  const e = pick(EXCUSES);
+  return (Math.random() < 0.35) ? (e + "  Also: it’s fun.") : e;
 }
 
-function applyVibe(){
+function applyVibeOnly(){
   const roast = pick(LOCAL_ROASTS);
-  const flavor = " · " + pick(FLAVOR_TAGS);
-  document.getElementById("roast").textContent = roast + flavor;
-  saveLS(LS_VIBE, roast + flavor);
+  const flavor = ` · ${pick(FLAVOR_TAGS)}`;
+  setVibe(roast, flavor);
+  renderMeter(); // meter follows real stats
+}
+
+function setServiceView(key){
+  const services = LAST?.capacity?.services || {};
+  const item = services[key];
+  if (!item) return;
+
+  document.getElementById('serviceCount').textContent = `${item.count} ${item.label}`;
+  document.getElementById('serviceHint').textContent =
+    `Based on ~${LAST.capacity.idle_ram_gb_est} GB idle RAM (intentionally rough).`;
+
+  document.getElementById('capacityMeta').innerHTML = `
+    <span class="pill">Idle RAM: ~${LAST.capacity.idle_ram_gb_est} GB</span>
+    <span class="pill">Cores: ${LAST.system.cpu_cores_logical}</span>
+  `;
+}
+
+function renderArchetype(){
+  const a = LAST?.archetype;
+  if (!a) { document.getElementById('archeHint').textContent = ""; return; }
+
+  const primary = a.primary ? `<strong>${a.primary.name}</strong>` : `<strong>Unclassified</strong>`;
+  const secondary = a.secondary ? ` · Secondary: <strong>${a.secondary.name}</strong>` : '';
+  const title = a.title ? ` · Title: <strong>${a.title}</strong>` : '';
+  const bonus = a.score_bonus ? ` (+${a.score_bonus} bonus)` : '';
+
+  document.getElementById('bonus').textContent = bonus ? ` · archetype bonus${bonus}` : '';
+  document.getElementById('archeHint').innerHTML =
+    `${primary}${secondary}${title}<br/><span style="color:rgba(231,238,247,.72)">${a.primary?.desc || "Run some services. Become someone."}</span>`;
+}
+
+function setAchievements(){
+  const a = LAST?.archetype;
+  const running = LAST?.docker?.containers_running || 0;
+  const uptime = LAST?.system?.uptime_days || 0;
+  const score = LAST?.overkill_score || 0;
+  const names = (LAST?.docker?.running_names_sample || []).map(x => (x||"").toLowerCase());
+
+  const ach = [];
+
+  if (running >= 1) ach.push("First Container ✅");
+  if (running >= 5) ach.push("Compose Enjoyer");
+  if (running >= 10) ach.push("Compose Storm");
+  if (running >= 25) ach.push("Container Collector");
+
+  if (uptime >= 7) ach.push("Uptime Week");
+  if (uptime >= 30) ach.push("Reboots Are Lava");
+
+  if (score >= 55) ach.push("Suspiciously Capable");
+  if (score >= 75) ach.push("Overkill Energy");
+  if (score >= 90) ach.push("Absolutely Unnecessary");
+
+  if (a?.primary?.name) ach.push(`Archetype: ${a.primary.name}`);
+
+  if (names.some(n => n.includes("test") || n.includes("temp") || n.includes("final"))) ach.push("Naming Discipline: Wounded");
+
+  const el = document.getElementById('achievements');
+  el.innerHTML = ach.length ? ach.map(x => `<span class="pill">${x}</span>`).join("") : `<span class="pill">No achievements yet. Touch docker.</span>`;
+}
+
+function renderMeter(){
+  if (!LAST) return;
+  const score = LAST.overkill_score || 0;
+  const running = LAST?.docker?.containers_running || 0;
+  const uptime = LAST?.system?.uptime_days || 0;
+
+  const meter = Math.min(100, Math.max(0, Math.round(score * 0.75 + running * 1.2 + Math.min(uptime,30) * 0.6)));
+  document.getElementById("meterFill").style.width = `${meter}%`;
+  document.getElementById("meterValue").textContent = `rationalization index: ${meter}/100`;
+
+  let txt = "—";
+  if (meter < 25) txt = "You can still stop. You won’t, but you could.";
+  else if (meter < 45) txt = "This is for learning. (it really is)";
+  else if (meter < 65) txt = "This is for production. (at home)";
+  else if (meter < 85) txt = "This is for resilience. (mostly ego)";
+  else txt = "This is for coping. (respect)";
+  document.getElementById("meterText").textContent = txt;
+}
+
+function dayKey(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
+function hashStr(s){
+  let h = 0;
+  for (let i=0;i<s.length;i++) h = ((h<<5)-h) + s.charCodeAt(i) | 0;
+  return Math.abs(h);
+}
+function renderHoroscope(){
+  const key = dayKey();
+  const p = choosePersona();
+  const seed = hashStr(key + p.name);
+  const msg = HOROSCOPE_BASE[seed % HOROSCOPE_BASE.length];
+  document.getElementById("horoscope").textContent = msg;
+  document.getElementById("horoscopeKey").textContent = `seed: ${key} · ${p.icon} ${p.name}`;
+}
+
+function renderHomelabTax(){
+  if (!LAST) return;
+  const idle = LAST.capacity?.idle_ram_gb_est ?? 0;
+  const cores = LAST.system?.cpu_cores_logical ?? 1;
+  const running = LAST.docker?.containers_running ?? 0;
+  const uptime = LAST.system?.uptime_days ?? 0;
+
+  const guilt = Math.min(10, Math.max(0, (running/6) + (idle/3) + (uptime/20))).toFixed(1);
+  const heat = Math.min(12, Math.max(0, (cores/4) + (running/10))).toFixed(1);
+  const brag = Math.min(100, Math.max(0, (running*3) + (uptime*0.8))).toFixed(0);
+
+  const items = [
+    `Estimated monthly electricity guilt: <strong>${guilt}</strong> units`,
+    `Heat output: enough to warm <strong>${heat}</strong> small cats`,
+    `Bragging rights index: <strong>${brag}</strong>/100`,
+    `Probability of “just one more service”: <strong>${Math.min(99, 35 + running*4)}</strong>%`,
+    `Chance you mention “reverse proxy” this week: <strong>${Math.min(99, 20 + uptime)}</strong>%`,
+  ];
+  document.getElementById("taxList").innerHTML = items.map(x => `<li>${x}</li>`).join("");
+}
+
+/* Auto-refresh toggle (persistent) */
+let autoRefreshEnabled = loadLS(LS_AUTO, "1") === "1";
+function setAutoRefreshUI(){
+  document.getElementById('toggleRefreshBtn').textContent = `Auto-refresh: ${autoRefreshEnabled ? "ON" : "OFF"}`;
+  if (!autoRefreshEnabled){
+    document.getElementById('nextRefreshPill').textContent = `auto-refresh is OFF`;
+    document.getElementById('nextRefreshText').textContent = `auto-refresh is OFF`;
+    document.getElementById('progress').style.transform = `scaleX(1)`;
+  }
+}
+
+function updateFooterCountdown(){
+  if (!autoRefreshEnabled) return;
+  document.getElementById('nextRefreshPill').textContent = `next refresh in: ${remaining}s`;
+  document.getElementById('nextRefreshText').textContent = `next refresh in: ${remaining}s`;
+  const frac = Math.max(0, Math.min(1, remaining / REFRESH_EVERY));
+  document.getElementById('progress').style.transform = `scaleX(${frac})`;
+}
+
+function tick(){
+  if (!autoRefreshEnabled) return;
+
+  remaining -= 1;
+  if (remaining <= 0){
+    remaining = REFRESH_EVERY;
+    loadStatus(); // real fetch
+  }
+  updateFooterCountdown();
 }
 
 async function loadStatus(){
-  const res = await fetch('status',{cache:'no-store'});
+  const res = await fetch('status', { cache: 'no-store' });
   const data = await res.json();
   LAST = data;
 
-  document.getElementById("score").textContent = data.overkill_score;
-  document.getElementById("status").textContent = data.status;
+  document.getElementById('score').textContent = data.overkill_score;
+  document.getElementById('status').textContent = data.status;
 
-  if(!loadLS(LS_VIBE)){
-    applyVibe();
+  const prettyOS = data.system?.os?.pretty || `${data.system?.os?.name || 'OS'} ${data.system?.os?.version || ''}`.trim();
+  document.getElementById('osPill').textContent = `OS: ${prettyOS}`;
+
+  const d = data.docker?.available
+    ? `Docker: ${data.docker.containers_running} running / ${data.docker.containers_total} total`
+    : `Docker: unavailable`;
+  document.getElementById('dockerPill').textContent = d;
+
+  document.getElementById('uptimePill').textContent = `Uptime: ${data.system.uptime_days}d`;
+
+  document.getElementById('sys').innerHTML = `
+    <span class="pill">CPU: ${data.system.cpu_percent}%</span>
+    <span class="pill">Cores: ${data.system.cpu_cores_logical}</span>
+    <span class="pill">RAM: ${data.system.ram_used_gb} / ${data.system.ram_total_gb} GB (${data.system.ram_percent}%)</span>
+  `;
+
+  renderArchetype();
+  setAchievements();
+  renderPersona();
+  setServiceView(document.getElementById('serviceSelect').value);
+
+  // VIBE: auto-refresh must NOT change it
+  const stored = parseVibe(loadLS(LS_VIBE, ""));
+  if (stored && (stored.roast || stored.flavor)){
+    document.getElementById('roast').textContent = stored.roast || "";
+    document.getElementById('flavor').textContent = stored.flavor || "";
   } else {
-    document.getElementById("roast").textContent = loadLS(LS_VIBE);
+    // first run: use backend roast as base, plus a flavor tag, then persist
+    const base = (typeof data.roast === "string" && data.roast.trim()) ? data.roast : pick(LOCAL_ROASTS);
+    const fl = ` · ${pick(FLAVOR_TAGS)}`;
+    setVibe(base, fl);
   }
 
-  renderPersona();
+  // Excuse: stable (only set if missing)
+  const savedExcuse = loadLS(LS_EXCUSE, "");
+  if (!savedExcuse) {
+    const e = generateExcuse();
+    saveLS(LS_EXCUSE, e);
+    document.getElementById("excuse").textContent = e;
+  }
+
+  renderMeter();
+  renderHoroscope();
+  renderHomelabTax();
 }
 
-document.getElementById("vibeBtn").onclick=applyVibe;
+/* events */
+document.getElementById('vibeBtn').addEventListener('click', applyVibeOnly);
 
-document.getElementById("excuseBtn").onclick=()=>{
+document.getElementById('excuseBtn').addEventListener('click', () => {
   const e = generateExcuse();
-  document.getElementById("excuse").textContent=e;
-  saveLS(LS_EXCUSE,e);
-};
+  document.getElementById("excuse").textContent = e;
+  saveLS(LS_EXCUSE, e);
+});
 
-document.getElementById("toggleRefreshBtn").onclick=()=>{
-  const enabled = loadLS(LS_AUTOREFRESH,"1")==="1";
-  saveLS(LS_AUTOREFRESH, enabled?"0":"1");
-  location.reload();
-};
+document.getElementById('toggleRefreshBtn').addEventListener('click', () => {
+  autoRefreshEnabled = !autoRefreshEnabled;
+  saveLS(LS_AUTO, autoRefreshEnabled ? "1" : "0");
+  setAutoRefreshUI();
+  if (autoRefreshEnabled){
+    remaining = REFRESH_EVERY;
+    updateFooterCountdown();
+  }
+});
 
-document.getElementById("year").textContent=new Date().getFullYear();
+document.getElementById('serviceSelect').addEventListener('change', e => setServiceView(e.target.value));
+document.getElementById('year').textContent = new Date().getFullYear();
 
-const savedExcuse=loadLS(LS_EXCUSE);
-if(savedExcuse) document.getElementById("excuse").textContent=savedExcuse;
+/* init saved excuse on page load */
+const initExcuse = loadLS(LS_EXCUSE, "");
+if (initExcuse) document.getElementById("excuse").textContent = initExcuse;
 
+setAutoRefreshUI();
 loadStatus();
+updateFooterCountdown();
+interval = setInterval(tick, 1000);
 </script>
-
 </body>
 </html>
