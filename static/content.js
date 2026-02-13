@@ -1,6 +1,6 @@
 /* ================================
    Overengineered content pack
-   Loaded via <script src="/static/content.js"></script>
+   Loaded via <script src="/static/content.js?v=..."></script>
 ================================ */
 
 const FLAVOR_TAGS = [
@@ -18,6 +18,7 @@ const FLAVOR_TAGS = [
   "If it isn't containerized, it doesn't count.",
   "Your dashboards are faster than your decisions.",
   "If it’s not HA, it’s just hope.",
+  "Your homelab has a personality now. Congrats.",
 ];
 
 const LOCAL_ROASTS = [
@@ -33,6 +34,7 @@ const LOCAL_ROASTS = [
   "This dashboard exists because YAML hurt you.",
   "This is suspiciously reasonable. Who are you?",
   "If it works, add monitoring until it doesn't.",
+  "Your CPU is chilling. Your ideas are not.",
 ];
 
 const EXCUSES = [
@@ -53,7 +55,7 @@ const EXCUSES = [
   "The SSDs are for latency. The latency is emotional.",
   "I’m practicing for when I accidentally become an SRE.",
   "It’s a staging environment. For my next bad idea.",
-  "It’s for ‘resilience’. Mostly against boredom.",
+  "It’s for resilience. Mostly against boredom.",
   "This is an educational project. My education is expensive.",
   "It reduces cloud spend. In exchange for electricity guilt.",
   "My monitoring stack needs more RAM to remember my mistakes.",
@@ -84,13 +86,68 @@ const HOROSCOPE_BASE = [
   "You will ‘clean up’ containers and create 3 new ones.",
 ];
 
+/* Cloud delusion pack */
+const CLOUD_MEMES = [
+  "If I don’t host it, it doesn’t exist.",
+  "AWS is just someone else’s homelab with better marketing.",
+  "Cloud is just renting someone else’s problems.",
+  "Latency is a lifestyle choice.",
+  "Egress fees are emotional damage.",
+  "This would be cheaper in the cloud… (narrator: it wouldn’t)",
+  "You didn’t save money. You saved control issues.",
+  "S3 is a feeling, not a storage class.",
+  "Kubernetes is watching. Judging.",
+  "Your CFO just felt a disturbance in the Force.",
+  "This is fine. Now pay per request.",
+];
+
+const EMOTIONAL_COSTS = [
+  "immeasurable",
+  "significant",
+  "catastrophic",
+  "astronomical",
+  "paid in YAML",
+  "measured in regret",
+  "charged per reboot",
+  "billed hourly (forever)",
+  "indexed by Prometheus",
+];
+
+/* Persona system */
 const PERSONAS = [
-  { id:"rack_philosopher",    name:"Rack Philosopher",    icon:"🧠", desc:"You contemplate airflow patterns and existential YAML questions." },
-  { id:"compose_archaeologist",name:"Compose Archaeologist",icon:"🏺", desc:"You dig through docker-compose files from 2019 like ancient scrolls." },
-  { id:"uptime_maximalist",   name:"Uptime Maximalist",   icon:"⏳", desc:"Reboots are weakness. The kernel remembers everything." },
-  { id:"metric_mystic",       name:"Metric Mystic",       icon:"📊", desc:"If it isn’t graphed, it didn’t happen." },
-  { id:"data_monarch",        name:"Data Monarch",        icon:"💾", desc:"Storage is not capacity. Storage is destiny." },
-  { id:"yaml_sorcerer",       name:"YAML Sorcerer",       icon:"📜", desc:"Indentation is your spellcasting medium." },
-  { id:"idle_aesthetic",      name:"Idle Aesthetician",   icon:"🧘", desc:"Your server is calm. Too calm. Beautifully calm." },
-  { id:"security_cultist",    name:"Security Cultist",    icon:"🔐", desc:"You rotate secrets to ward off cosmic threats (and yourself)." },
+  { id:"rack_philosopher",     name:"Rack Philosopher",      icon:"🧠", desc:"You contemplate airflow patterns and existential YAML questions." },
+  { id:"compose_archaeologist",name:"Compose Archaeologist",  icon:"🏺", desc:"You dig through docker-compose files from 2019 like ancient scrolls." },
+  { id:"uptime_maximalist",    name:"Uptime Maximalist",     icon:"⏳", desc:"Reboots are weakness. The kernel remembers everything." },
+  { id:"metric_mystic",        name:"Metric Mystic",         icon:"📊", desc:"If it isn’t graphed, it didn’t happen." },
+  { id:"data_monarch",         name:"Data Monarch",          icon:"💾", desc:"Storage is not capacity. Storage is destiny." },
+  { id:"yaml_sorcerer",        name:"YAML Sorcerer",         icon:"📜", desc:"Indentation is your spellcasting medium." },
+  { id:"idle_aesthetic",       name:"Idle Aesthetician",     icon:"🧘", desc:"Your server is calm. Too calm. Beautifully calm." },
+  { id:"security_cultist",     name:"Security Cultist",      icon:"🔐", desc:"You rotate secrets to ward off cosmic threats (and yourself)." },
+];
+
+/* Syslog-style footer lines */
+const SYSLOG_LINES = [
+  "[INFO] compose: everything is fine (lie detected)",
+  "[INFO] prometheus: remembering your mistakes",
+  "[WARN] nginx: another subdomain has been requested",
+  "[WARN] storage: 'just one more disk' event detected",
+  "[INFO] uptime: refusing reboot (strongly)",
+  "[INFO] docker: containers are multiplying (as designed)",
+  "[WARN] yaml: indentation confidence is dropping",
+  "[INFO] cpu: chilling. ideas: escalating.",
+  "[WARN] homelab: has gained sentience (minor)",
+  "[INFO] backup: backup of backup scheduled (again)",
+  "[WARN] jellyfin: someone requested 4K (brace)",
+  "[INFO] security: paranoia level nominal",
+  "[INFO] dashboard: generating vibes at unsafe levels",
+];
+
+/* Respect lines (Press F) */
+const RESPECT_LINES = [
+  "F paid. The rack acknowledges your sacrifice.",
+  "Respect registered. Fans spin slightly faster.",
+  "F received. Uptime increases by 0.0001% (placebo).",
+  "Respect paid. YAML debt forgiven (not really).",
+  "F pressed. A new container appears somewhere.",
+  "Respect confirmed. Your reverse proxy smiles.",
 ];

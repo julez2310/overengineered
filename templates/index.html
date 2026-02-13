@@ -6,7 +6,7 @@
   <title>{{ app_name }}</title>
 
   <!-- content pack -->
-  <script src="/static/content.js"></script>
+  <script src="/static/content.js?v={{ app_version }}"></script>
 
   <style>
     :root{
@@ -37,7 +37,7 @@
     nav.menu a.primary{ background: rgba(14,165,233,.14); border-color: rgba(14,165,233,.55); }
 
     /* Layout */
-    .container{ max-width:1040px; margin:0 auto; padding:18px; padding-bottom: 92px; }
+    .container{ max-width:1040px; margin:0 auto; padding:18px; padding-bottom: 108px; }
     .grid{ display:grid; gap:14px; grid-template-columns: repeat(12, 1fr); margin-top:14px; }
     .card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:16px; }
     .hero{ grid-column: span 12; }
@@ -98,6 +98,29 @@
     .persona .name{ font-weight:900; letter-spacing:-0.02em; }
     .persona .desc{ color:var(--muted); font-size:13px; margin-top:2px; }
 
+    /* Toast */
+    .toast{
+      position: fixed;
+      right: 14px;
+      bottom: 92px;
+      z-index: 80;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(11,18,32,.92);
+      color: rgba(231,238,247,.92);
+      font-size: 13px;
+      max-width: 360px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events: none;
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     /* Fixed footer */
     .footerbar{
       position: fixed; left:0; right:0; bottom:0;
@@ -108,7 +131,7 @@
     }
     .footer-inner{
       max-width:1040px; margin:0 auto; padding:10px 18px;
-      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
       color:var(--muted); font-size:13px;
     }
     .footer-inner a{ text-decoration: underline; }
@@ -175,6 +198,7 @@
           <span class="pill" id="osPill">OS: ...</span>
           <span class="pill" id="dockerPill">Docker: ...</span>
           <span class="pill" id="uptimePill">Uptime: ...</span>
+          <span class="pill mono" id="respectPill">F respects: 0</span>
         </div>
 
         <div class="row" style="margin-top:12px">
@@ -254,8 +278,25 @@
         <div class="hint" style="margin-top:10px">A completely scientific measure of guilt and heat.</div>
         <ul class="clean" id="taxList"></ul>
       </div>
+
+      <!-- CLOUD DELUSION -->
+      <div class="card hero">
+        <div class="label">Cloud delusion calculator</div>
+        <div class="hint" style="margin-top:10px">
+          Completely unscientific pricing. 100% vibes. 0% billing accuracy.
+        </div>
+
+        <div class="row" style="margin-top:12px" id="cloudBadges"></div>
+
+        <div class="big" id="cloudHeadline">—</div>
+        <div class="hint mono" id="cloudBreakdown">—</div>
+
+        <ul class="clean" id="cloudList"></ul>
+      </div>
     </div>
   </div>
+
+  <div class="toast" id="toast">—</div>
 
   <!-- Fixed footer -->
   <div class="footerbar">
@@ -267,18 +308,21 @@
         <div class="bar" aria-hidden="true"><div id="progress"></div></div>
       </div>
 
-      <div>Version <strong>{{ app_version }}</strong> · auto-refresh <strong>30s</strong></div>
+      <div style="min-width:320px; text-align:right;">
+        <div id="syslogLine" class="mono">[INFO] boot: vibes initializing…</div>
+        <div>Version <strong>{{ app_version }}</strong> · auto-refresh <strong>30s</strong></div>
+      </div>
     </div>
   </div>
 
 <script>
 /* ---------------------------
-   Storage keys (v2)
-   (prevents old broken values)
+   Storage keys (v3)
 ---------------------------- */
-const LS_EXCUSE = "oe_excuse_v2";
-const LS_VIBE   = "oe_vibe_v2";
-const LS_AUTO   = "oe_autorefresh_v2";
+const LS_EXCUSE  = "oe_excuse_v3";
+const LS_VIBE    = "oe_vibe_v3";
+const LS_AUTO    = "oe_autorefresh_v3";
+const LS_RESPECT = "oe_respects_v1";
 
 let LAST = null;
 
@@ -296,6 +340,13 @@ function saveLS(key, value){
   try { localStorage.setItem(key, value); } catch {}
 }
 
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 1400);
+}
+
 /* robust parse: accepts JSON or plain string */
 function parseVibe(v){
   if (!v) return null;
@@ -305,7 +356,6 @@ function parseVibe(v){
       return { roast: obj.roast || "", flavor: obj.flavor || "" };
     }
   } catch {}
-  // plain string fallback
   return { roast: String(v), flavor: "" };
 }
 
@@ -347,7 +397,7 @@ function applyVibeOnly(){
   const roast = pick(LOCAL_ROASTS);
   const flavor = ` · ${pick(FLAVOR_TAGS)}`;
   setVibe(roast, flavor);
-  renderMeter(); // meter follows real stats
+  renderMeter();
 }
 
 function setServiceView(key){
@@ -385,6 +435,7 @@ function setAchievements(){
   const uptime = LAST?.system?.uptime_days || 0;
   const score = LAST?.overkill_score || 0;
   const names = (LAST?.docker?.running_names_sample || []).map(x => (x||"").toLowerCase());
+  const respects = parseInt(loadLS(LS_RESPECT, "0"), 10) || 0;
 
   const ach = [];
 
@@ -403,6 +454,8 @@ function setAchievements(){
   if (a?.primary?.name) ach.push(`Archetype: ${a.primary.name}`);
 
   if (names.some(n => n.includes("test") || n.includes("temp") || n.includes("final"))) ach.push("Naming Discipline: Wounded");
+
+  if (respects >= 1) ach.push(`Paid respects: ${respects}F`);
 
   const el = document.getElementById('achievements');
   el.innerHTML = ach.length ? ach.map(x => `<span class="pill">${x}</span>`).join("") : `<span class="pill">No achievements yet. Touch docker.</span>`;
@@ -469,6 +522,91 @@ function renderHomelabTax(){
   document.getElementById("taxList").innerHTML = items.map(x => `<li>${x}</li>`).join("");
 }
 
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+function renderCloudCost(){
+  if (!LAST) return;
+
+  const cores = LAST.system?.cpu_cores_logical ?? 2;
+  const ramGB = LAST.system?.ram_total_gb ?? 2;
+  const running = LAST.docker?.containers_running ?? 0;
+  const uptimeDays = LAST.system?.uptime_days ?? 0;
+
+  // fake “AWS-ish” monthly vibes
+  const cpuRate = 12.0; // €/month per vCPU
+  const ramRate = 3.5;  // €/month per GB
+  const base = 6.0;
+
+  const monitoringTax = clamp(running * 0.9, 0, 35);
+  const haTax = uptimeDays >= 30 ? 18 : 6;
+  const egressFee = clamp(running * 1.3, 0, 50);
+
+  let cloudMonthly = base + cores * cpuRate + ramGB * ramRate + monitoringTax + haTax + egressFee;
+
+  const score = LAST.overkill_score || 0;
+  cloudMonthly *= (1 + clamp((score - 50) / 200, 0, 0.35));
+  cloudMonthly = Math.round(cloudMonthly);
+
+  // local power vibes (rough)
+  const watts = clamp(18 + cores * 6 + running * 2.2, 20, 140);
+  const kwhPerMonth = (watts / 1000) * 24 * 30;
+  const pricePerKwh = 0.35;
+  const powerMonthly = Math.round(kwhPerMonth * pricePerKwh);
+
+  const emo = pick(EMOTIONAL_COSTS);
+  const meme = pick(CLOUD_MEMES);
+
+  document.getElementById("cloudHeadline").textContent =
+    `“If this were in the cloud…” ≈ €${cloudMonthly}/month`;
+
+  document.getElementById("cloudBreakdown").textContent =
+    `local power vibes: ~€${powerMonthly}/month · estimated draw: ~${Math.round(watts)}W · emotional cost: ${emo}`;
+
+  document.getElementById("cloudBadges").innerHTML = `
+    <span class="pill">vCPU: ${cores}</span>
+    <span class="pill">RAM: ${ramGB} GB</span>
+    <span class="pill">containers: ${running}</span>
+    <span class="pill">uptime: ${uptimeDays}d</span>
+  `;
+
+  const items = [
+    `Managed monitoring tax: €${Math.round(monitoringTax)}/mo`,
+    `High-availability confidence surcharge: €${Math.round(haTax)}/mo`,
+    `Egress fee (someone streamed a file): €${Math.round(egressFee)}/mo`,
+    `Meme disclaimer: <strong>${meme}</strong>`,
+  ];
+  document.getElementById("cloudList").innerHTML = items.map(x => `<li>${x}</li>`).join("");
+}
+
+/* Respects (Press F) */
+function getRespects(){
+  return parseInt(loadLS(LS_RESPECT, "0"), 10) || 0;
+}
+function setRespects(n){
+  saveLS(LS_RESPECT, String(n));
+  document.getElementById("respectPill").textContent = `F respects: ${n}`;
+}
+function payRespects(){
+  const n = getRespects() + 1;
+  setRespects(n);
+  setAchievements();
+  toast(pick(RESPECT_LINES));
+}
+
+/* Syslog ticker */
+let syslogTimer = null;
+function setSyslogLine(force){
+  const el = document.getElementById("syslogLine");
+  if (!el) return;
+  const line = pick(SYSLOG_LINES);
+  el.textContent = line + (force ? "" : "");
+}
+function startSyslog(){
+  setSyslogLine(true);
+  if (syslogTimer) clearInterval(syslogTimer);
+  syslogTimer = setInterval(() => setSyslogLine(false), 6500);
+}
+
 /* Auto-refresh toggle (persistent) */
 let autoRefreshEnabled = loadLS(LS_AUTO, "1") === "1";
 function setAutoRefreshUI(){
@@ -494,7 +632,7 @@ function tick(){
   remaining -= 1;
   if (remaining <= 0){
     remaining = REFRESH_EVERY;
-    loadStatus(); // real fetch
+    loadStatus();
   }
   updateFooterCountdown();
 }
@@ -524,8 +662,8 @@ async function loadStatus(){
   `;
 
   renderArchetype();
-  setAchievements();
   renderPersona();
+  setAchievements();
   setServiceView(document.getElementById('serviceSelect').value);
 
   // VIBE: auto-refresh must NOT change it
@@ -534,7 +672,6 @@ async function loadStatus(){
     document.getElementById('roast').textContent = stored.roast || "";
     document.getElementById('flavor').textContent = stored.flavor || "";
   } else {
-    // first run: use backend roast as base, plus a flavor tag, then persist
     const base = (typeof data.roast === "string" && data.roast.trim()) ? data.roast : pick(LOCAL_ROASTS);
     const fl = ` · ${pick(FLAVOR_TAGS)}`;
     setVibe(base, fl);
@@ -551,6 +688,7 @@ async function loadStatus(){
   renderMeter();
   renderHoroscope();
   renderHomelabTax();
+  renderCloudCost();
 }
 
 /* events */
@@ -573,13 +711,28 @@ document.getElementById('toggleRefreshBtn').addEventListener('click', () => {
 });
 
 document.getElementById('serviceSelect').addEventListener('change', e => setServiceView(e.target.value));
+
+/* Press F to pay respects (global) */
+window.addEventListener("keydown", (e) => {
+  // ignore if typing in inputs (future-proof)
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+  if (tag === "input" || tag === "textarea") return;
+
+  if (e.key === "f" || e.key === "F") {
+    payRespects();
+  }
+});
+
 document.getElementById('year').textContent = new Date().getFullYear();
 
-/* init saved excuse on page load */
+/* init saved excuse + respects on page load */
 const initExcuse = loadLS(LS_EXCUSE, "");
 if (initExcuse) document.getElementById("excuse").textContent = initExcuse;
 
+setRespects(getRespects());
+
 setAutoRefreshUI();
+startSyslog();
 loadStatus();
 updateFooterCountdown();
 interval = setInterval(tick, 1000);
