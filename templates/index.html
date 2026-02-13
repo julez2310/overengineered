@@ -5,70 +5,129 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{ app_name }}</title>
   <style>
-    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-           background:#0b0f14; color:#e7eef7; margin:0; }
-    a { color: inherit; text-decoration: none; }
-    .wrap { max-width: 1020px; margin: 0 auto; padding: 22px 18px; }
-    .topbar { display:flex; align-items:center; justify-content:space-between; gap:14px; }
-    .brand { display:flex; align-items:center; gap:12px; }
-    .logo { width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
-            background:#0b1220; border:1px solid #1f2937; font-size:20px; }
-    .brand h1 { font-size:18px; margin:0; letter-spacing:-0.02em; }
-    .nav { display:flex; gap:10px; }
-    .nav a { padding:8px 10px; border-radius:12px; border:1px solid #1f2937; background:#111827; opacity:0.95; }
-    .nav a:hover { opacity:1; }
+    :root {
+      --bg:#0b0f14;
+      --panel:#0f172a;
+      --panel2:#0b1220;
+      --border:#1f2937;
+      --text:#e7eef7;
+      --muted:rgba(231,238,247,.72);
+      --accent:#0ea5e9;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--bg); color:var(--text);
+          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    a{ color:inherit; text-decoration:none; }
+    .container{ max-width:1040px; margin:0 auto; padding:18px; }
 
-    .grid { display:grid; gap:14px; grid-template-columns: repeat(12, 1fr); margin-top:14px; }
-    .card { background:#111827; border:1px solid #1f2937; border-radius:16px; padding:16px; }
-    .hero { grid-column: span 12; }
-    .half { grid-column: span 6; }
+    /* Sticky top menu */
+    .top{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(8px);
+      background: rgba(11,15,20,.75);
+      border-bottom:1px solid var(--border);
+    }
+    .top-inner{ max-width:1040px; margin:0 auto; padding:12px 18px;
+                display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .brand{ display:flex; align-items:center; gap:10px; min-width: 220px; }
+    .mark{ width:34px; height:34px; border-radius:12px;
+           border:1px solid var(--border); background:var(--panel2);
+           display:grid; place-items:center; font-size:16px; }
+    .brand-title{ display:flex; flex-direction:column; line-height:1.1; }
+    .brand-title strong{ font-size:14px; letter-spacing:-0.02em; }
+    .brand-title span{ font-size:12px; color:var(--muted); }
+
+    .menu{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .menu a{
+      padding:8px 10px; border-radius:12px;
+      border:1px solid var(--border);
+      background: rgba(15,23,42,.65);
+      font-size:13px;
+    }
+    .menu a:hover{ border-color: rgba(14,165,233,.5); }
+    .menu a.primary{ background: rgba(14,165,233,.14); border-color: rgba(14,165,233,.55); }
+
+    .grid{ display:grid; gap:14px; grid-template-columns: repeat(12, 1fr); margin-top:14px; }
+    .card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:16px; }
+    .hero{ grid-column: span 12; }
+    .half{ grid-column: span 6; }
     @media (max-width: 900px){ .half{ grid-column: span 12; } }
 
-    .kpi { font-size: 54px; font-weight: 850; letter-spacing:-0.05em; margin-top:6px; }
-    .label { opacity: 0.85; }
-    .muted { opacity: 0.75; margin: 8px 0 12px; line-height:1.4; }
-    .btn { background:#0ea5e9; color:#001018; border:0; border-radius:12px;
-           padding:10px 14px; font-weight:800; cursor:pointer; }
-    .btn:active { transform: translateY(1px); }
-    .pill { display:inline-block; padding:6px 10px; border-radius:999px;
-            background:#0b1220; border:1px solid #1f2937; margin-right:6px; margin-top:6px; opacity:0.95; }
-    .row { display:flex; gap:10px; flex-wrap:wrap; }
+    .label{ font-size:12px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
+    .kpi{ font-size:54px; font-weight:900; letter-spacing:-0.05em; margin:6px 0 2px; }
+    .statusline{ font-size:13px; color:var(--muted); }
+    .roast{ margin:10px 0 14px; color:var(--muted); line-height:1.45; }
 
-    .footer { margin-top:18px; opacity:0.7; font-size:13px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .footer a { text-decoration: underline; }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; }
+    .pill{ display:inline-flex; align-items:center; gap:6px;
+           padding:7px 10px; border-radius:999px;
+           background:var(--panel2); border:1px solid var(--border);
+           font-size:13px; color:rgba(231,238,247,.9); }
 
-    select { background:#0b1220; border:1px solid #1f2937; border-radius:12px; padding:10px 12px; color:#e7eef7; }
-    .big { font-size:28px; font-weight:800; letter-spacing:-0.03em; margin:10px 0 0; }
+    .btn{
+      border:1px solid rgba(14,165,233,.55);
+      background: rgba(14,165,233,.12);
+      color: var(--text);
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    select{
+      width:100%;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:10px 12px;
+      color:var(--text);
+      font-size:14px;
+      outline:none;
+    }
+
+    .big{ font-size:28px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 4px; }
+    .hint{ color:var(--muted); font-size:13px; line-height:1.45; }
+
+    .footer{ margin:18px 0 6px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+             color:var(--muted); font-size:13px; }
+    .footer a{ text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
+  <div class="top">
+    <div class="top-inner">
       <div class="brand">
-        <div class="logo">⚙️</div>
-        <div>
-          <h1>{{ app_name }}</h1>
-          <div class="label">Self-hosted overkill detector</div>
+        <div class="mark">⚙️</div>
+        <div class="brand-title">
+          <strong>{{ app_name }}</strong>
+          <span>self-hosted overkill detector</span>
         </div>
       </div>
-      <div class="nav">
-        <a href="/">Dashboard</a>
-        <a href="/raw">Raw JSON</a>
-        <a href="/status.json">/status.json</a>
-        <a href="/health">/health</a>
-      </div>
-    </div>
 
+      <nav class="menu" aria-label="menu">
+        <a class="primary" href="/">Dashboard</a>
+        <a href="/raw">Raw</a>
+        <a href="/status.json">status.json</a>
+        <a href="/health">health</a>
+        <a href="{{ github_url }}" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container">
     <div class="grid">
       <div class="card hero">
-        <div class="label">OVERKILL SCORE</div>
+        <div class="label">Overkill score</div>
         <div class="kpi" id="score">--</div>
-        <div class="label">STATUS: <span id="status">---</span></div>
-        <p class="muted" id="roast">loading roast...</p>
+        <div class="statusline">Status: <span id="status">---</span></div>
+        <div class="roast" id="roast">loading...</div>
 
-        <button class="btn" id="roastBtn">Roast me harder</button>
+        <div class="row">
+          <button class="btn" id="roastBtn">Roast me harder</button>
+        </div>
 
-        <div class="row" style="margin-top:10px">
+        <div class="row" style="margin-top:12px">
           <span class="pill" id="osPill">OS: ...</span>
           <span class="pill" id="dockerPill">Docker: ...</span>
           <span class="pill" id="uptimePill">Uptime: ...</span>
@@ -76,12 +135,12 @@
       </div>
 
       <div class="card half">
-        <div class="label">SYSTEM</div>
-        <div class="row" id="sys"></div>
+        <div class="label">System</div>
+        <div class="row" id="sys" style="margin-top:10px"></div>
       </div>
 
       <div class="card half">
-        <div class="label">WHAT COULD IT DO?</div>
+        <div class="label">What could it do?</div>
         <div style="margin-top:10px">
           <select id="serviceSelect">
             <option value="minecraft">Minecraft servers</option>
@@ -96,48 +155,42 @@
           </select>
 
           <div class="big" id="serviceCount">--</div>
-          <div class="muted" id="serviceHint"></div>
+          <div class="hint" id="serviceHint"></div>
 
-          <div class="row" id="capacityMeta"></div>
+          <div class="row" id="capacityMeta" style="margin-top:10px"></div>
         </div>
       </div>
     </div>
 
     <div class="footer">
-      <div>
-        © <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a>
-      </div>
-      <div>
-        Version <strong>{{ app_version }}</strong>
-      </div>
+      <div>© <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a></div>
+      <div>Version <strong>{{ app_version }}</strong></div>
     </div>
   </div>
 
 <script>
-let LAST_STATUS = null;
+let LAST = null;
 
 function setServiceView(key) {
-  if (!LAST_STATUS) return;
-
-  const services = LAST_STATUS.capacity?.services || {};
+  if (!LAST) return;
+  const services = LAST.capacity?.services || {};
   const item = services[key];
   if (!item) return;
 
   document.getElementById('serviceCount').textContent = `${item.count} ${item.label}`;
   document.getElementById('serviceHint').textContent =
-    `Based on ~${LAST_STATUS.capacity.idle_ram_gb_est} GB idle RAM (intentionally rough estimates).`;
+    `Based on ~${LAST.capacity.idle_ram_gb_est} GB idle RAM (intentionally rough).`;
 
-  const meta = document.getElementById('capacityMeta');
-  meta.innerHTML = `
-    <span class="pill">Idle RAM: ~${LAST_STATUS.capacity.idle_ram_gb_est} GB</span>
-    <span class="pill">Cores: ${LAST_STATUS.system.cpu_cores_logical}</span>
+  document.getElementById('capacityMeta').innerHTML = `
+    <span class="pill">Idle RAM: ~${LAST.capacity.idle_ram_gb_est} GB</span>
+    <span class="pill">Cores: ${LAST.system.cpu_cores_logical}</span>
   `;
 }
 
 async function loadStatus() {
-  const res = await fetch('status', { cache: 'no-store' }); // relative path = proxy/prefix friendly
+  const res = await fetch('status', { cache: 'no-store' });
   const data = await res.json();
-  LAST_STATUS = data;
+  LAST = data;
 
   document.getElementById('score').textContent = data.overkill_score;
   document.getElementById('status').textContent = data.status;
@@ -163,9 +216,9 @@ async function loadStatus() {
 }
 
 document.getElementById('roastBtn').addEventListener('click', loadStatus);
-document.getElementById('serviceSelect').addEventListener('change', (e) => setServiceView(e.target.value));
-
+document.getElementById('serviceSelect').addEventListener('change', e => setServiceView(e.target.value));
 document.getElementById('year').textContent = new Date().getFullYear();
+
 loadStatus();
 </script>
 </body>

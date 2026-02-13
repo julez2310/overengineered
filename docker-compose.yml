@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  overengineered:
+    build: .
+    container_name: overengineered
+    ports:
+      - "8080:8000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/os-release:/host/etc/os-release:ro
+    restart: unless-stopped
