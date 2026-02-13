@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ app_name }} - Raw JSON</title>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+           background:#0b0f14; color:#e7eef7; margin:0; }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1020px; margin: 0 auto; padding: 22px 18px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
+            background:#0b1220; border:1px solid #1f2937; font-size:20px; }
+    .nav { display:flex; gap:10px; }
+    .nav a { padding:8px 10px; border-radius:12px; border:1px solid #1f2937; background:#111827; opacity:0.95; }
+    pre { white-space: pre-wrap; word-break: break-word; background:#0b1220; border:1px solid #1f2937;
+          border-radius:16px; padding:14px; margin-top:14px; }
+    .footer { margin-top:18px; opacity:0.7; font-size:13px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .footer a { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">🧾</div>
+        <div>
+          <div style="font-weight:800; letter-spacing:-0.02em;">{{ app_name }} – Raw JSON</div>
+          <div style="opacity:0.8;">/status output</div>
+        </div>
+      </div>
+      <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/raw">Raw JSON</a>
+        <a href="/status.json">/status.json</a>
+      </div>
+    </div>
+
+    <pre id="raw">loading...</pre>
+
+    <div class="footer">
+      <div>
+        © <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a>
+      </div>
+      <div>
+        Version <strong>{{ app_version }}</strong>
+      </div>
+    </div>
+  </div>
+
+<script>
+async function loadRaw() {
+  const res = await fetch('status', { cache: 'no-store' });
+  const data = await res.json();
+  document.getElementById('raw').textContent = JSON.stringify(data, null, 2);
+}
+document.getElementById('year').textContent = new Date().getFullYear();
+loadRaw();
+</script>
+</body>
+</html>

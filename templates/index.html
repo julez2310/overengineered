@@ -3,30 +3,62 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Overengineered</title>
+  <title>{{ app_name }}</title>
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
            background:#0b0f14; color:#e7eef7; margin:0; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 18px; }
-    .grid { display:grid; gap:14px; grid-template-columns: repeat(12, 1fr); }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1020px; margin: 0 auto; padding: 22px 18px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
+            background:#0b1220; border:1px solid #1f2937; font-size:20px; }
+    .brand h1 { font-size:18px; margin:0; letter-spacing:-0.02em; }
+    .nav { display:flex; gap:10px; }
+    .nav a { padding:8px 10px; border-radius:12px; border:1px solid #1f2937; background:#111827; opacity:0.95; }
+    .nav a:hover { opacity:1; }
+
+    .grid { display:grid; gap:14px; grid-template-columns: repeat(12, 1fr); margin-top:14px; }
     .card { background:#111827; border:1px solid #1f2937; border-radius:16px; padding:16px; }
     .hero { grid-column: span 12; }
     .half { grid-column: span 6; }
     @media (max-width: 900px){ .half{ grid-column: span 12; } }
-    .kpi { font-size: 52px; font-weight: 800; letter-spacing:-0.04em; }
+
+    .kpi { font-size: 54px; font-weight: 850; letter-spacing:-0.05em; margin-top:6px; }
     .label { opacity: 0.85; }
-    .muted { opacity: 0.75; }
+    .muted { opacity: 0.75; margin: 8px 0 12px; line-height:1.4; }
     .btn { background:#0ea5e9; color:#001018; border:0; border-radius:12px;
-           padding:10px 14px; font-weight:700; cursor:pointer; }
+           padding:10px 14px; font-weight:800; cursor:pointer; }
     .btn:active { transform: translateY(1px); }
     .pill { display:inline-block; padding:6px 10px; border-radius:999px;
-            background:#0b1220; border:1px solid #1f2937; margin-right:6px; margin-top:6px; }
-    pre { white-space: pre-wrap; word-break: break-word; background:#0b1220; border:1px solid #1f2937;
-          border-radius:12px; padding:12px; margin:0; }
+            background:#0b1220; border:1px solid #1f2937; margin-right:6px; margin-top:6px; opacity:0.95; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; }
+
+    .footer { margin-top:18px; opacity:0.7; font-size:13px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .footer a { text-decoration: underline; }
+
+    select { background:#0b1220; border:1px solid #1f2937; border-radius:12px; padding:10px 12px; color:#e7eef7; }
+    .big { font-size:28px; font-weight:800; letter-spacing:-0.03em; margin:10px 0 0; }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">⚙️</div>
+        <div>
+          <h1>{{ app_name }}</h1>
+          <div class="label">Self-hosted overkill detector</div>
+        </div>
+      </div>
+      <div class="nav">
+        <a href="/">Dashboard</a>
+        <a href="/raw">Raw JSON</a>
+        <a href="/status.json">/status.json</a>
+        <a href="/health">/health</a>
+      </div>
+    </div>
+
     <div class="grid">
       <div class="card hero">
         <div class="label">OVERKILL SCORE</div>
@@ -36,7 +68,8 @@
 
         <button class="btn" id="roastBtn">Roast me harder</button>
 
-        <div style="margin-top:10px">
+        <div class="row" style="margin-top:10px">
+          <span class="pill" id="osPill">OS: ...</span>
           <span class="pill" id="dockerPill">Docker: ...</span>
           <span class="pill" id="uptimePill">Uptime: ...</span>
         </div>
@@ -44,29 +77,74 @@
 
       <div class="card half">
         <div class="label">SYSTEM</div>
-        <div id="sys"></div>
+        <div class="row" id="sys"></div>
       </div>
 
       <div class="card half">
         <div class="label">WHAT COULD IT DO?</div>
-        <div id="could"></div>
-      </div>
+        <div style="margin-top:10px">
+          <select id="serviceSelect">
+            <option value="minecraft">Minecraft servers</option>
+            <option value="nginx">nginx instances</option>
+            <option value="pihole">Pi-hole instances</option>
+            <option value="immich">Immich instances</option>
+            <option value="vaultwarden">Vaultwarden instances</option>
+            <option value="homeassistant">Home Assistant instances</option>
+            <option value="grafana">Grafana instances</option>
+            <option value="prometheus">Prometheus instances</option>
+            <option value="jellyfin">Jellyfin instances</option>
+          </select>
 
-      <div class="card hero">
-        <div class="label">RAW JSON</div>
-        <pre id="raw"></pre>
+          <div class="big" id="serviceCount">--</div>
+          <div class="muted" id="serviceHint"></div>
+
+          <div class="row" id="capacityMeta"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>
+        © <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a>
+      </div>
+      <div>
+        Version <strong>{{ app_version }}</strong>
       </div>
     </div>
   </div>
 
 <script>
+let LAST_STATUS = null;
+
+function setServiceView(key) {
+  if (!LAST_STATUS) return;
+
+  const services = LAST_STATUS.capacity?.services || {};
+  const item = services[key];
+  if (!item) return;
+
+  document.getElementById('serviceCount').textContent = `${item.count} ${item.label}`;
+  document.getElementById('serviceHint').textContent =
+    `Based on ~${LAST_STATUS.capacity.idle_ram_gb_est} GB idle RAM (intentionally rough estimates).`;
+
+  const meta = document.getElementById('capacityMeta');
+  meta.innerHTML = `
+    <span class="pill">Idle RAM: ~${LAST_STATUS.capacity.idle_ram_gb_est} GB</span>
+    <span class="pill">Cores: ${LAST_STATUS.system.cpu_cores_logical}</span>
+  `;
+}
+
 async function loadStatus() {
-  const res = await fetch('status', { cache: 'no-store' }); // relative path = proxy-friendly
+  const res = await fetch('status', { cache: 'no-store' }); // relative path = proxy/prefix friendly
   const data = await res.json();
+  LAST_STATUS = data;
 
   document.getElementById('score').textContent = data.overkill_score;
   document.getElementById('status').textContent = data.status;
   document.getElementById('roast').textContent = data.roast;
+
+  const prettyOS = data.system?.os?.pretty || `${data.system?.os?.name || 'OS'} ${data.system?.os?.version || ''}`.trim();
+  document.getElementById('osPill').textContent = `OS: ${prettyOS}`;
 
   const d = data.docker?.available
     ? `Docker: ${data.docker.containers_running} running / ${data.docker.containers_total} total`
@@ -76,19 +154,18 @@ async function loadStatus() {
   document.getElementById('uptimePill').textContent = `Uptime: ${data.system.uptime_days}d`;
 
   document.getElementById('sys').innerHTML = `
-    <div class="pill">CPU: ${data.system.cpu_percent}%</div>
-    <div class="pill">Cores: ${data.system.cpu_cores_logical}</div>
-    <div class="pill">RAM: ${data.system.ram_used_gb} / ${data.system.ram_total_gb} GB (${data.system.ram_percent}%)</div>
+    <span class="pill">CPU: ${data.system.cpu_percent}%</span>
+    <span class="pill">Cores: ${data.system.cpu_cores_logical}</span>
+    <span class="pill">RAM: ${data.system.ram_used_gb} / ${data.system.ram_total_gb} GB (${data.system.ram_percent}%)</span>
   `;
 
-  document.getElementById('could').innerHTML = data.what_could_it_do.could_run
-    .map(x => `<div class="pill">${x}</div>`)
-    .join('');
-
-  document.getElementById('raw').textContent = JSON.stringify(data, null, 2);
+  setServiceView(document.getElementById('serviceSelect').value);
 }
 
 document.getElementById('roastBtn').addEventListener('click', loadStatus);
+document.getElementById('serviceSelect').addEventListener('change', (e) => setServiceView(e.target.value));
+
+document.getElementById('year').textContent = new Date().getFullYear();
 loadStatus();
 </script>
 </body>
