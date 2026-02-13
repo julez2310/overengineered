@@ -21,6 +21,17 @@ Overengineered is a lightweight FastAPI dashboard that analyzes your system and 
 
 It’s fast. It’s local. It’s judgmental.
 
+## 📸 Screenshots
+
+### Overkill Score
+![Overkillscore](screenshots/Screenshot_1.png)
+
+### System Overview
+![SystemOverview](screenshots/Screenshot_2.png)
+
+### Very Useful Hints!
+![UsefulHints](screenshots/Screenshot_3.png)
+
 ---
 
 ## Features
