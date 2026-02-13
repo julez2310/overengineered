@@ -13,9 +13,8 @@
     body{ margin:0; background:var(--bg); color:var(--text);
           font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
     a{ color:inherit; text-decoration:none; }
-    .container{ max-width:1040px; margin:0 auto; padding:18px; }
 
-    /* unified sticky menu */
+    /* Sticky top menu */
     .top{ position:sticky; top:0; z-index:50; backdrop-filter: blur(8px);
           background: rgba(11,15,20,.75); border-bottom:1px solid var(--border); }
     .top-inner{ max-width:1040px; margin:0 auto; padding:12px 18px;
@@ -32,6 +31,8 @@
     nav.menu a:hover{ border-color: rgba(14,165,233,.5); }
     nav.menu a.primary{ background: rgba(14,165,233,.14); border-color: rgba(14,165,233,.55); }
 
+    /* Layout */
+    .container{ max-width:1040px; margin:0 auto; padding:18px; padding-bottom: 86px; } /* room for fixed footer */
     .grid{ display:grid; gap:14px; grid-template-columns: repeat(12, 1fr); margin-top:14px; }
     .card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:16px; }
     .hero{ grid-column: span 12; }
@@ -56,9 +57,35 @@
     .big{ font-size:26px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 4px; }
     .hint{ color:var(--muted); font-size:13px; line-height:1.45; }
 
-    .footer{ margin:18px 0 6px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
-             color:var(--muted); font-size:13px; }
-    .footer a{ text-decoration: underline; }
+    /* History chart */
+    canvas{ width:100%; height:90px; display:block; border-radius:14px; background: rgba(11,18,32,.35); border:1px solid var(--border); }
+
+    /* Fixed footer with countdown + animated bar */
+    .footerbar{
+      position: fixed; left:0; right:0; bottom:0;
+      background: rgba(11,15,20,.85);
+      border-top:1px solid var(--border);
+      backdrop-filter: blur(8px);
+      z-index:60;
+    }
+    .footer-inner{
+      max-width:1040px; margin:0 auto; padding:10px 18px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      color:var(--muted); font-size:13px;
+    }
+    .footer-inner a{ text-decoration: underline; }
+    .refreshbox{ display:flex; align-items:center; gap:10px; min-width: 280px; justify-content:center; flex:1; }
+    .bar{
+      width: 180px; height: 6px; border-radius:999px; overflow:hidden;
+      border:1px solid var(--border); background: rgba(15,23,42,.65);
+    }
+    .bar > div{
+      height:100%; width:100%;
+      background: rgba(14,165,233,.55);
+      transform-origin: left center;
+      transform: scaleX(1);
+    }
+    .mono{ font-variant-numeric: tabular-nums; }
   </style>
 </head>
 <body>
@@ -87,12 +114,15 @@
       <div class="card hero">
         <div class="label">Overkill score</div>
         <div class="kpi" id="score">--</div>
-        <div class="statusline">Status: <span id="status">---</span> <span id="bonus" style="opacity:.9;"></span></div>
+        <div class="statusline">
+          Status: <span id="status">---</span>
+          <span id="bonus" style="opacity:.9;"></span>
+          <span id="flavor" style="opacity:.9;"></span>
+        </div>
         <div class="roast" id="roast">loading...</div>
 
         <div class="row">
-          <button class="btn" id="refreshBtn">Refresh now</button>
-          <span class="pill" id="nextRefreshPill">Next refresh in: --s</span>
+          <button class="btn" id="vibeBtn">New vibe</button>
         </div>
 
         <div class="row" style="margin-top:12px">
@@ -106,6 +136,14 @@
         <div class="label">System</div>
         <div class="row" id="sys" style="margin-top:10px"></div>
         <div class="hint" style="margin-top:10px" id="archeHint"></div>
+      </div>
+
+      <div class="card half">
+        <div class="label">History</div>
+        <div class="hint" style="margin-top:10px">Local browser history (last ~120 refreshes).</div>
+        <div style="margin-top:10px">
+          <canvas id="history"></canvas>
+        </div>
       </div>
 
       <div class="card half">
@@ -132,18 +170,70 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="footer">
+  <!-- Fixed footer -->
+  <div class="footerbar">
+    <div class="footer-inner">
       <div>© <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a></div>
+
+      <div class="refreshbox">
+        <span class="mono" id="nextRefreshText">next refresh in: --s</span>
+        <div class="bar" aria-hidden="true"><div id="progress"></div></div>
+      </div>
+
       <div>Version <strong>{{ app_version }}</strong> · auto-refresh <strong>30s</strong></div>
     </div>
   </div>
 
 <script>
 let LAST = null;
+
 const REFRESH_EVERY = 30;
 let remaining = REFRESH_EVERY;
-let timer = null;
+let interval = null;
+
+const FLAVOR_TAGS = [
+  "Almost responsible. Almost.",
+  "Suspiciously calm workload.",
+  "This machine could do science. You chose vibes.",
+  "Uptime maximalism detected.",
+  "Compose energy is building...",
+  "Everything is stable. That can't be right.",
+  "Your server is bored.",
+  "Minimal usage, maximal potential.",
+  "Quiet fans. Loud dreams.",
+  "This is fine. (it never is)",
+];
+
+const LOCAL_ROASTS = [
+  "Almost responsible. Almost.",
+  "This is suspiciously reasonable. Who are you?",
+  "If it isn't graphed, it didn't happen.",
+  "You could be doing more harm. And yet you choose peace.",
+  "You didn't build a server. You built an opinion.",
+  "A monument to ambition and underutilization.",
+  "Your docker-compose files have docker-compose files.",
+  "This dashboard is a symptom, not a solution.",
+  "Congratulations: you have compute. Now find a purpose.",
+];
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+
+function applyVibeOnly() {
+  if (!LAST) return;
+  const a = LAST.archetype;
+  const primary = a?.primary?.name;
+  const title = a?.title;
+
+  // create a "fresh" roast without fetching new stats
+  let roast = pick(LOCAL_ROASTS);
+  if (primary) roast = `${roast}  (Primary: ${primary})`;
+  if (title) roast = `${roast}  · Title: ${title}`;
+
+  document.getElementById('roast').textContent = roast;
+  document.getElementById('flavor').textContent = ` · ${pick(FLAVOR_TAGS)}`;
+}
 
 function setServiceView(key) {
   if (!LAST) return;
@@ -170,23 +260,92 @@ function renderArchetype() {
   const title = a.title ? ` · Title: <strong>${a.title}</strong>` : '';
   const bonus = a.score_bonus ? ` (+${a.score_bonus} bonus)` : '';
 
-  document.getElementById('bonus').textContent = bonus ? ` · archetype bonus ${bonus}` : '';
-  document.getElementById('archeHint').innerHTML = `${primary}${secondary}${title}<br/><span style="color:rgba(231,238,247,.72)">${a.primary?.desc || "Run some services. Become someone."}</span>`;
+  document.getElementById('bonus').textContent = bonus ? ` · archetype bonus${bonus}` : '';
+  document.getElementById('archeHint').innerHTML =
+    `${primary}${secondary}${title}<br/><span style="color:rgba(231,238,247,.72)">${a.primary?.desc || "Run some services. Become someone."}</span>`;
 }
 
-function resetTimer() {
-  remaining = REFRESH_EVERY;
-  document.getElementById('nextRefreshPill').textContent = `Next refresh in: ${remaining}s`;
+function loadHistory() {
+  try {
+    return JSON.parse(localStorage.getItem("oe_history") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(hist) {
+  localStorage.setItem("oe_history", JSON.stringify(hist.slice(-120)));
+}
+
+function pushHistoryPoint(score) {
+  const hist = loadHistory();
+  hist.push({ t: Date.now(), s: score });
+  saveHistory(hist);
+  drawHistory(hist);
+}
+
+function drawHistory(hist) {
+  const canvas = document.getElementById("history");
+  const ctx = canvas.getContext("2d");
+
+  // handle HiDPI
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.floor(rect.width * dpr);
+  canvas.height = Math.floor(rect.height * dpr);
+  ctx.scale(dpr, dpr);
+
+  // clear
+  ctx.clearRect(0, 0, rect.width, rect.height);
+
+  if (!hist.length) return;
+
+  const scores = hist.map(p => p.s);
+  const min = Math.min(...scores, 0);
+  const max = Math.max(...scores, 100);
+
+  const pad = 10;
+  const w = rect.width - pad*2;
+  const h = rect.height - pad*2;
+
+  // subtle grid line
+  ctx.globalAlpha = 0.35;
+  ctx.strokeStyle = "rgba(231,238,247,.25)";
+  ctx.beginPath();
+  ctx.moveTo(pad, pad + h/2);
+  ctx.lineTo(pad + w, pad + h/2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // line
+  ctx.strokeStyle = "rgba(14,165,233,.75)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+
+  const n = hist.length;
+  for (let i=0; i<n; i++){
+    const x = pad + (i/(Math.max(1,n-1))) * w;
+    const v = hist[i].s;
+    const y = pad + (1 - ((v - min) / (max - min || 1))) * h;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+function updateFooterCountdown() {
+  document.getElementById('nextRefreshText').textContent = `next refresh in: ${remaining}s`;
+  const frac = Math.max(0, Math.min(1, remaining / REFRESH_EVERY));
+  document.getElementById('progress').style.transform = `scaleX(${frac})`;
 }
 
 function tick() {
   remaining -= 1;
   if (remaining <= 0) {
-    loadStatus();
-    resetTimer();
-  } else {
-    document.getElementById('nextRefreshPill').textContent = `Next refresh in: ${remaining}s`;
+    remaining = REFRESH_EVERY;
+    loadStatus(); // real fetch
   }
+  updateFooterCountdown();
 }
 
 async function loadStatus() {
@@ -197,6 +356,7 @@ async function loadStatus() {
   document.getElementById('score').textContent = data.overkill_score;
   document.getElementById('status').textContent = data.status;
   document.getElementById('roast').textContent = data.roast;
+  document.getElementById('flavor').textContent = ` · ${pick(FLAVOR_TAGS)}`;
 
   const prettyOS = data.system?.os?.pretty || `${data.system?.os?.name || 'OS'} ${data.system?.os?.version || ''}`.trim();
   document.getElementById('osPill').textContent = `OS: ${prettyOS}`;
@@ -216,19 +376,20 @@ async function loadStatus() {
 
   renderArchetype();
   setServiceView(document.getElementById('serviceSelect').value);
+
+  // history point
+  pushHistoryPoint(data.overkill_score);
 }
 
-document.getElementById('refreshBtn').addEventListener('click', () => {
-  loadStatus();
-  resetTimer();
-});
-
+document.getElementById('vibeBtn').addEventListener('click', applyVibeOnly);
 document.getElementById('serviceSelect').addEventListener('change', e => setServiceView(e.target.value));
 document.getElementById('year').textContent = new Date().getFullYear();
 
+window.addEventListener("resize", () => drawHistory(loadHistory()));
+
 loadStatus();
-resetTimer();
-timer = setInterval(tick, 1000);
+updateFooterCountdown();
+interval = setInterval(tick, 1000);
 </script>
 </body>
 </html>
