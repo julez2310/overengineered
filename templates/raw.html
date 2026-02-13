@@ -13,10 +13,10 @@
     body{ margin:0; background:var(--bg); color:var(--text);
           font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
     a{ color:inherit; text-decoration:none; }
-    .container{ max-width:1040px; margin:0 auto; padding:18px; }
 
+    /* Sticky menu (same as dashboard) */
     .top{ position:sticky; top:0; z-index:50; backdrop-filter: blur(8px);
-          background: rgba(11,15,20,.75); border-bottom:1px solid var(--border); }
+          background: rgba(11,15,20,.78); border-bottom:1px solid var(--border); }
     .top-inner{ max-width:1040px; margin:0 auto; padding:12px 18px;
                 display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .brand{ display:flex; align-items:center; gap:10px; min-width: 220px; }
@@ -29,15 +29,30 @@
     nav.menu{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
     nav.menu a{ padding:8px 10px; border-radius:12px; border:1px solid var(--border);
                 background: rgba(15,23,42,.65); font-size:13px; }
-    nav.menu a.primary{ border-color: rgba(14,165,233,.55); background: rgba(14,165,233,.14); }
+    nav.menu a.primary{ background: rgba(14,165,233,.14); border-color: rgba(14,165,233,.55); }
 
-    pre{ white-space: pre-wrap; word-break: break-word;
-         background:var(--panel2); border:1px solid var(--border); border-radius:18px;
-         padding:14px; margin-top:14px; color: rgba(231,238,247,.92); }
+    .container{ max-width:1040px; margin:0 auto; padding:18px; padding-bottom: 92px; }
 
-    .footer{ margin:18px 0 6px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
-             color:var(--muted); font-size:13px; }
-    .footer a{ text-decoration: underline; }
+    pre{
+      white-space: pre-wrap; word-break: break-word;
+      background:var(--panel2); border:1px solid var(--border); border-radius:18px;
+      padding:14px; margin-top:14px; color: rgba(231,238,247,.92);
+    }
+
+    /* Fixed footer */
+    .footerbar{
+      position: fixed; left:0; right:0; bottom:0;
+      background: rgba(11,15,20,.88);
+      border-top:1px solid var(--border);
+      backdrop-filter: blur(8px);
+      z-index:60;
+    }
+    .footer-inner{
+      max-width:1040px; margin:0 auto; padding:10px 18px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      color:var(--muted); font-size:13px;
+    }
+    .footer-inner a{ text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -63,8 +78,10 @@
 
   <div class="container">
     <pre id="raw">loading...</pre>
+  </div>
 
-    <div class="footer">
+  <div class="footerbar">
+    <div class="footer-inner">
       <div>© <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a></div>
       <div>Version <strong>{{ app_version }}</strong></div>
     </div>
