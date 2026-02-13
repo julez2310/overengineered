@@ -3,55 +3,75 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ app_name }} - Raw JSON</title>
+  <title>{{ app_name }} · Raw</title>
   <style>
-    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-           background:#0b0f14; color:#e7eef7; margin:0; }
-    a { color: inherit; text-decoration: none; }
-    .wrap { max-width: 1020px; margin: 0 auto; padding: 22px 18px; }
-    .topbar { display:flex; align-items:center; justify-content:space-between; gap:14px; }
-    .brand { display:flex; align-items:center; gap:12px; }
-    .logo { width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
-            background:#0b1220; border:1px solid #1f2937; font-size:20px; }
-    .nav { display:flex; gap:10px; }
-    .nav a { padding:8px 10px; border-radius:12px; border:1px solid #1f2937; background:#111827; opacity:0.95; }
-    pre { white-space: pre-wrap; word-break: break-word; background:#0b1220; border:1px solid #1f2937;
-          border-radius:16px; padding:14px; margin-top:14px; }
-    .footer { margin-top:18px; opacity:0.7; font-size:13px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    .footer a { text-decoration: underline; }
+    :root{
+      --bg:#0b0f14; --panel:#0f172a; --panel2:#0b1220; --border:#1f2937;
+      --text:#e7eef7; --muted:rgba(231,238,247,.72);
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--bg); color:var(--text);
+          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    a{ color:inherit; text-decoration:none; }
+    .container{ max-width:1040px; margin:0 auto; padding:18px; }
+
+    .top{ position:sticky; top:0; z-index:50; backdrop-filter: blur(8px);
+          background: rgba(11,15,20,.75); border-bottom:1px solid var(--border); }
+    .top-inner{ max-width:1040px; margin:0 auto; padding:12px 18px;
+                display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .brand{ display:flex; align-items:center; gap:10px; min-width: 220px; }
+    .mark{ width:34px; height:34px; border-radius:12px; border:1px solid var(--border);
+           background:var(--panel2); display:grid; place-items:center; font-size:16px; }
+    .brand-title{ display:flex; flex-direction:column; line-height:1.1; }
+    .brand-title strong{ font-size:14px; letter-spacing:-0.02em; }
+    .brand-title span{ font-size:12px; color:var(--muted); }
+
+    nav.menu{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    nav.menu a{ padding:8px 10px; border-radius:12px; border:1px solid var(--border);
+                background: rgba(15,23,42,.65); font-size:13px; }
+    nav.menu a.primary{ border-color: rgba(14,165,233,.55); background: rgba(14,165,233,.14); }
+
+    pre{ white-space: pre-wrap; word-break: break-word;
+         background:var(--panel2); border:1px solid var(--border); border-radius:18px;
+         padding:14px; margin-top:14px; color: rgba(231,238,247,.92); }
+
+    .footer{ margin:18px 0 6px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+             color:var(--muted); font-size:13px; }
+    .footer a{ text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="topbar">
+  <div class="top">
+    <div class="top-inner">
       <div class="brand">
-        <div class="logo">🧾</div>
-        <div>
-          <div style="font-weight:800; letter-spacing:-0.02em;">{{ app_name }} – Raw JSON</div>
-          <div style="opacity:0.8;">/status output</div>
+        <div class="mark">🧾</div>
+        <div class="brand-title">
+          <strong>{{ app_name }}</strong>
+          <span>raw status output</span>
         </div>
       </div>
-      <div class="nav">
-        <a href="/">Dashboard</a>
-        <a href="/raw">Raw JSON</a>
-        <a href="/status.json">/status.json</a>
-      </div>
-    </div>
 
+      <nav class="menu" aria-label="menu">
+        <a href="/">Dashboard</a>
+        <a class="primary" href="/raw">Raw</a>
+        <a href="/status.json" target="_blank" rel="noreferrer">status.json</a>
+        <a href="/health" target="_blank" rel="noreferrer">health</a>
+        <a href="{{ github_url }}" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container">
     <pre id="raw">loading...</pre>
 
     <div class="footer">
-      <div>
-        © <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a>
-      </div>
-      <div>
-        Version <strong>{{ app_version }}</strong>
-      </div>
+      <div>© <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a></div>
+      <div>Version <strong>{{ app_version }}</strong></div>
     </div>
   </div>
 
 <script>
-async function loadRaw() {
+async function loadRaw(){
   const res = await fetch('status', { cache: 'no-store' });
   const data = await res.json();
   document.getElementById('raw').textContent = JSON.stringify(data, null, 2);

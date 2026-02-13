@@ -5,14 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{ app_name }}</title>
   <style>
-    :root {
-      --bg:#0b0f14;
-      --panel:#0f172a;
-      --panel2:#0b1220;
-      --border:#1f2937;
-      --text:#e7eef7;
-      --muted:rgba(231,238,247,.72);
-      --accent:#0ea5e9;
+    :root{
+      --bg:#0b0f14; --panel:#0f172a; --panel2:#0b1220; --border:#1f2937;
+      --text:#e7eef7; --muted:rgba(231,238,247,.72); --accent:#0ea5e9;
     }
     *{ box-sizing:border-box; }
     body{ margin:0; background:var(--bg); color:var(--text);
@@ -20,32 +15,22 @@
     a{ color:inherit; text-decoration:none; }
     .container{ max-width:1040px; margin:0 auto; padding:18px; }
 
-    /* Sticky top menu */
-    .top{
-      position:sticky; top:0; z-index:50;
-      backdrop-filter: blur(8px);
-      background: rgba(11,15,20,.75);
-      border-bottom:1px solid var(--border);
-    }
+    /* unified sticky menu */
+    .top{ position:sticky; top:0; z-index:50; backdrop-filter: blur(8px);
+          background: rgba(11,15,20,.75); border-bottom:1px solid var(--border); }
     .top-inner{ max-width:1040px; margin:0 auto; padding:12px 18px;
                 display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .brand{ display:flex; align-items:center; gap:10px; min-width: 220px; }
-    .mark{ width:34px; height:34px; border-radius:12px;
-           border:1px solid var(--border); background:var(--panel2);
-           display:grid; place-items:center; font-size:16px; }
+    .mark{ width:34px; height:34px; border-radius:12px; border:1px solid var(--border);
+           background:var(--panel2); display:grid; place-items:center; font-size:16px; }
     .brand-title{ display:flex; flex-direction:column; line-height:1.1; }
     .brand-title strong{ font-size:14px; letter-spacing:-0.02em; }
     .brand-title span{ font-size:12px; color:var(--muted); }
-
-    .menu{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-    .menu a{
-      padding:8px 10px; border-radius:12px;
-      border:1px solid var(--border);
-      background: rgba(15,23,42,.65);
-      font-size:13px;
-    }
-    .menu a:hover{ border-color: rgba(14,165,233,.5); }
-    .menu a.primary{ background: rgba(14,165,233,.14); border-color: rgba(14,165,233,.55); }
+    nav.menu{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    nav.menu a{ padding:8px 10px; border-radius:12px; border:1px solid var(--border);
+                background: rgba(15,23,42,.65); font-size:13px; }
+    nav.menu a:hover{ border-color: rgba(14,165,233,.5); }
+    nav.menu a.primary{ background: rgba(14,165,233,.14); border-color: rgba(14,165,233,.55); }
 
     .grid{ display:grid; gap:14px; grid-template-columns: repeat(12, 1fr); margin-top:14px; }
     .card{ background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:16px; }
@@ -56,37 +41,19 @@
     .label{ font-size:12px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
     .kpi{ font-size:54px; font-weight:900; letter-spacing:-0.05em; margin:6px 0 2px; }
     .statusline{ font-size:13px; color:var(--muted); }
-    .roast{ margin:10px 0 14px; color:var(--muted); line-height:1.45; }
+    .roast{ margin:10px 0 14px; color:var(--muted); line-height:1.45; min-height: 42px; }
 
-    .row{ display:flex; gap:8px; flex-wrap:wrap; }
-    .pill{ display:inline-flex; align-items:center; gap:6px;
-           padding:7px 10px; border-radius:999px;
-           background:var(--panel2); border:1px solid var(--border);
-           font-size:13px; color:rgba(231,238,247,.9); }
+    .row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .pill{ display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px;
+           background:var(--panel2); border:1px solid var(--border); font-size:13px; color:rgba(231,238,247,.9); }
 
-    .btn{
-      border:1px solid rgba(14,165,233,.55);
-      background: rgba(14,165,233,.12);
-      color: var(--text);
-      border-radius:14px;
-      padding:10px 12px;
-      font-weight:800;
-      cursor:pointer;
-    }
+    .btn{ border:1px solid rgba(14,165,233,.55); background: rgba(14,165,233,.12);
+          color: var(--text); border-radius:14px; padding:10px 12px; font-weight:800; cursor:pointer; }
     .btn:active{ transform: translateY(1px); }
 
-    select{
-      width:100%;
-      background:var(--panel2);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:10px 12px;
-      color:var(--text);
-      font-size:14px;
-      outline:none;
-    }
-
-    .big{ font-size:28px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 4px; }
+    select{ width:100%; background:var(--panel2); border:1px solid var(--border);
+            border-radius:14px; padding:10px 12px; color:var(--text); font-size:14px; outline:none; }
+    .big{ font-size:26px; font-weight:900; letter-spacing:-0.03em; margin:10px 0 4px; }
     .hint{ color:var(--muted); font-size:13px; line-height:1.45; }
 
     .footer{ margin:18px 0 6px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
@@ -108,8 +75,8 @@
       <nav class="menu" aria-label="menu">
         <a class="primary" href="/">Dashboard</a>
         <a href="/raw">Raw</a>
-        <a href="/status.json">status.json</a>
-        <a href="/health">health</a>
+        <a href="/status.json" target="_blank" rel="noreferrer">status.json</a>
+        <a href="/health" target="_blank" rel="noreferrer">health</a>
         <a href="{{ github_url }}" target="_blank" rel="noreferrer">GitHub</a>
       </nav>
     </div>
@@ -120,11 +87,12 @@
       <div class="card hero">
         <div class="label">Overkill score</div>
         <div class="kpi" id="score">--</div>
-        <div class="statusline">Status: <span id="status">---</span></div>
+        <div class="statusline">Status: <span id="status">---</span> <span id="bonus" style="opacity:.9;"></span></div>
         <div class="roast" id="roast">loading...</div>
 
         <div class="row">
-          <button class="btn" id="roastBtn">Roast me harder</button>
+          <button class="btn" id="refreshBtn">Refresh now</button>
+          <span class="pill" id="nextRefreshPill">Next refresh in: --s</span>
         </div>
 
         <div class="row" style="margin-top:12px">
@@ -137,6 +105,7 @@
       <div class="card half">
         <div class="label">System</div>
         <div class="row" id="sys" style="margin-top:10px"></div>
+        <div class="hint" style="margin-top:10px" id="archeHint"></div>
       </div>
 
       <div class="card half">
@@ -152,6 +121,8 @@
             <option value="grafana">Grafana instances</option>
             <option value="prometheus">Prometheus instances</option>
             <option value="jellyfin">Jellyfin instances</option>
+            <option value="paperless">Paperless-ngx instances</option>
+            <option value="nextcloud">Nextcloud instances</option>
           </select>
 
           <div class="big" id="serviceCount">--</div>
@@ -164,12 +135,15 @@
 
     <div class="footer">
       <div>© <span id="year"></span> <a href="{{ github_url }}" target="_blank" rel="noreferrer">{{ github_url }}</a></div>
-      <div>Version <strong>{{ app_version }}</strong></div>
+      <div>Version <strong>{{ app_version }}</strong> · auto-refresh <strong>30s</strong></div>
     </div>
   </div>
 
 <script>
 let LAST = null;
+const REFRESH_EVERY = 30;
+let remaining = REFRESH_EVERY;
+let timer = null;
 
 function setServiceView(key) {
   if (!LAST) return;
@@ -185,6 +159,34 @@ function setServiceView(key) {
     <span class="pill">Idle RAM: ~${LAST.capacity.idle_ram_gb_est} GB</span>
     <span class="pill">Cores: ${LAST.system.cpu_cores_logical}</span>
   `;
+}
+
+function renderArchetype() {
+  const a = LAST?.archetype;
+  if (!a) return;
+
+  const primary = a.primary ? `<strong>${a.primary.name}</strong>` : `<strong>Unclassified</strong>`;
+  const secondary = a.secondary ? ` · Secondary: <strong>${a.secondary.name}</strong>` : '';
+  const title = a.title ? ` · Title: <strong>${a.title}</strong>` : '';
+  const bonus = a.score_bonus ? ` (+${a.score_bonus} bonus)` : '';
+
+  document.getElementById('bonus').textContent = bonus ? ` · archetype bonus ${bonus}` : '';
+  document.getElementById('archeHint').innerHTML = `${primary}${secondary}${title}<br/><span style="color:rgba(231,238,247,.72)">${a.primary?.desc || "Run some services. Become someone."}</span>`;
+}
+
+function resetTimer() {
+  remaining = REFRESH_EVERY;
+  document.getElementById('nextRefreshPill').textContent = `Next refresh in: ${remaining}s`;
+}
+
+function tick() {
+  remaining -= 1;
+  if (remaining <= 0) {
+    loadStatus();
+    resetTimer();
+  } else {
+    document.getElementById('nextRefreshPill').textContent = `Next refresh in: ${remaining}s`;
+  }
 }
 
 async function loadStatus() {
@@ -212,14 +214,21 @@ async function loadStatus() {
     <span class="pill">RAM: ${data.system.ram_used_gb} / ${data.system.ram_total_gb} GB (${data.system.ram_percent}%)</span>
   `;
 
+  renderArchetype();
   setServiceView(document.getElementById('serviceSelect').value);
 }
 
-document.getElementById('roastBtn').addEventListener('click', loadStatus);
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  loadStatus();
+  resetTimer();
+});
+
 document.getElementById('serviceSelect').addEventListener('change', e => setServiceView(e.target.value));
 document.getElementById('year').textContent = new Date().getFullYear();
 
 loadStatus();
+resetTimer();
+timer = setInterval(tick, 1000);
 </script>
 </body>
 </html>
